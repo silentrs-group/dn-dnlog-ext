@@ -1,0 +1,99 @@
+.filtered-text-field {
+    -fx-background-color: -fx-control-inner-background;
+    -fx-border-radius: 0;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: derive(darkgray, -50%);
+    -fx-padding: 3 3 3 8;
+    -fx-spacing: 8;
+}
+
+.filtered-text-field > .button {
+    -fx-shape: 'M20 1H0L8 10.46V17L12 19V10.46L20 1Z';
+    -fx-min-width: 13;
+    -fx-max-width: 13;
+    -fx-min-height: 13;
+    -fx-max-height: 13;
+    -fx-background-color: darkgray  !important;
+    -fx-border-color: transparent;
+}
+
+.fake-text-field {
+    -fx-spacing: 5;
+}
+
+.filtered-text-field > .button:hover {
+    -fx-background-color: gray;
+}
+
+.fake-text-field .text-field {
+    -fx-background-color: transparent;
+    -fx-border-radius: 0;
+    -fx-border-color: transparent;
+}
+
+.filter-node {
+    -fx-border-color: derive(darkgray, -50%);
+    -fx-border-radius: 3;
+}
+
+.filter-node .label {
+    -fx-text-fill: gray;
+}
+
+.filter-node .button {
+    -fx-background-color: darkgray !important;
+}
+
+.filter-node > .button:hover {
+    -fx-background-color: gray;
+}
+
+.filter-list .list-cell *,
+.filter-list .list-cell:odd,
+.filter-list .list-cell:even {
+    -fx-background-color: -fx-background !important;
+}
+
+.filter-list .list-cell:selected,
+.filter-list .list-cell:hover {
+    -fx-background-color: #0000000F !important;
+}
+
+.tab-terminal {
+    -fx-shape: "M8.87868 8.87868L2.38092 2.38092C1.5023 1.5023 0 2.12457 0 3.36713C0 3.76931 0.173613 4.15191 0.476286 4.41675L5.41974 8.74227C6.78572 9.9375 6.78572 12.0625 5.41974 13.2577L0.476287 17.5833C0.173614 17.8481 0 18.2307 0 18.6329C0 19.8754 1.5023 20.4977 2.38092 19.6191L8.87868 13.1213C10.0503 11.9497 10.0503 10.0503 8.87868 8.87868Z M24.5 21H12.5C11.6716 21 11 20.3284 11 19.5C11 18.6716 11.6716 18 12.5 18H24.5C25.3284 18 26 18.6716 26 19.5C26 20.3284 25.3284 21 24.5 21Z";
+    -fx-border-color: gray;
+    -fx-min-width:  15;
+    -fx-min-height: 12;
+    -fx-max-width:  15;
+    -fx-max-height: 12;
+
+    -fx-border-width: 4;
+}
+
+.tab-dn-log {
+    -fx-shape: "M0";
+    -fx-border-color: gray;
+    -fx-min-width:  15;
+    -fx-min-height: 12;
+    -fx-max-width:  15;
+    -fx-max-height: 12;
+
+    -fx-border-width: 4;
+}
+
+
+.log-data-time {
+    -fx-text-fill: gray;
+}
+
+.log-data-class {
+    -fx-text-fill: #6EBAFF;
+    -fx-font-weight: bold;
+}
+
+.log-data-line-debug,
+.log-data-line-info,
+.log-data-line-warn,
+.log-data-line-error {
+    -fx-background-color: #0000000F;
+}
