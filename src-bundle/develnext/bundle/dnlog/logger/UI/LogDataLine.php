@@ -4,6 +4,8 @@ namespace develnext\bundle\dnlog\logger\UI;
 use develnext\bundle\dnlog\filteredComponent\Eventable;
 use gui;
 use php\gui\layout\UXHBox;
+use php\gui\UXTitledPane;
+use php\lib\str;
 
 class LogDataLine 
 {
@@ -33,6 +35,10 @@ class LogDataLine
             $this->message = $this->makeLabel("message")
         ]);
 
+        $this->level->alignment = "CENTER_RIGHT";
+        $this->level->css("-fx-min-width", "50");
+        $this->class->css("-fx-min-width", "120");
+
         $this->message->autoSize = true;
         UXHBox::setHgrow($this->message, 'ALWAYS');
         UXHBox::setHgrow($this->container, 'ALWAYS');
@@ -61,6 +67,23 @@ class LogDataLine
     public function setMessage ($val)
     {
         $this->message->text = $val;
+
+        if (($lines = str::lines($val) > 1) || str::length($val) >= 120) {
+            if ($lines > 1) {
+                $this->_message = new UXTitledPane(str::sub($lines[0], 0, 120));
+            } else {
+                $this->_message = new UXTitledPane(str::sub($val, 0, 120));
+            }
+
+            $this->_message->expanded = false;
+            $this->container->children->replace($this->message, $this->_message);
+
+            UXHBox::setHgrow($this->_message, 'ALWAYS');
+
+            $this->_message->content = new UXHBox([$this->message]);
+
+
+        }
     }
     
     public function getNode ()

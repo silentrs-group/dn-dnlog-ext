@@ -4,6 +4,7 @@ namespace develnext\bundle\dnlog\filteredComponent;
 use develnext\bundle\dnlog\filteredComponent\items\SelectedFilter;
 use framework;
 use gui;
+use php\gui\{layout\UXHBox, UXButton, UXListView, UXPopupWindow, UXTextField};
 use php\util\Flow;
 use std;
 
@@ -12,7 +13,7 @@ class FilteredTextField extends UXHBox
     /**
      * @var UXButton
      */
-    private $showFiltersButton;
+    private $showHistoryButton;
     
     /**
      * @var UXTextField
@@ -41,7 +42,7 @@ class FilteredTextField extends UXHBox
     private $selectedFiltersNode = [];
     
     private $onListItemEnterSend = false;
-    
+
     use Shortcutable;
     
     public function __construct ()
@@ -52,7 +53,7 @@ class FilteredTextField extends UXHBox
         $this->alignment = 'CENTER';
         $this->spacing = 5;
 
-        $this->add($this->showFiltersButton = new UXButton());
+        $this->add($this->showHistoryButton = new UXButton());
         $this->add($this->filtersContainer  = new UXHBox());
         
         $this->filtersContainer->add($this->textFieldFilters = new UXTextField());
@@ -60,7 +61,7 @@ class FilteredTextField extends UXHBox
         
         $this->textFieldFilters->promptText = 'Нажмите Ctrl+Space чтобы увидеть возможные фильтры';
         
-        $this->showFiltersButton->on("click", function () {            
+        $this->showHistoryButton->on("click", function () {
             $this->makePoup();
             
             $this->list->items->addAll($this->history);
@@ -107,7 +108,7 @@ class FilteredTextField extends UXHBox
     private function addFilter ()
     {
         if ($this->textFieldFilters->text == "") return;
-        
+
         $this->selectedFilters[] = $this->textFieldFilters->text;
         $this->selectedFilters = array_unique($this->selectedFilters);
         
@@ -154,6 +155,7 @@ class FilteredTextField extends UXHBox
             $this->popup = new UXPopupWindow();
             $this->popup->autoFix = true;
             $this->popup->autoHide = true;
+            $this->popup->hideOnEscape = true;
             $this->popup->add($this->list = new UXListView());
             $this->list->classes->add('filter-list');
             $this->list->leftAnchor = $this->list->topAnchor = $this->list->rightAnchor = $this->list->bottomAnchor = 0;
@@ -194,34 +196,9 @@ class FilteredTextField extends UXHBox
                 if ($filter === $selectedFilter->getFilter()) {
 
                     $selectedFilter->removeFilter();
-                    /* $this->removeFilter($filter); */
                 }
             }
                     
         }
     }
 }
-
-
-/*
-события
-addFilter 
-removeFilter
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

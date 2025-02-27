@@ -10,7 +10,7 @@ use develnext\bundle\dnlog\logger\UI\LogDataLine;
 use dnlogger\DNLogServer;
 use ide\Ide;
 use ide\Logger;
-use php\gui\{layout\UXHBox, layout\UXScrollPane, layout\UXVBox, UXComboBox, UXLabelEx, UXTab, UXTabPane};
+use php\gui\{layout\UXHBox, layout\UXScrollPane, layout\UXVBox, UXButton, UXComboBox, UXLabelEx, UXTab, UXTabPane};
 use php\io\ResourceStream;
 use php\lib\str;
 use php\lang\{Thread, ThreadPool};
@@ -34,17 +34,22 @@ class DNLog
      * @var UXVBox
      */
     private $container;
+    /**
+     * @var \php\gui\UXButton
+     */
+    private $clearButton;
+    private $autoScroll;
+    private $heightDifference;
+    private $defaultHeightRatio;
 
     public function __construct()
     {
-        if ($this->worker === null) {
-            $this->worker = ThreadPool::create(1, 1);
-        }
+        $this->worker = ThreadPool::create(1, 1);
 
         if (!DNLogServer::$state) {
             Logger::info("Logger server is started on port 11394");
             DNLogServer::start(11394, function ($message) {
-                Logger::error("i.m:".$message);
+                //Logger::error("i.m:".$message);
                 $this->makeLine(json_decode($message, true));
             });
         }
@@ -104,9 +109,15 @@ class DNLog
         $tabPane->tabs->add($newConsole = new UXTab("DNLog"));
         $newConsole->graphic = new UXHBox();
         $newConsole->graphic->classes->add("tab-dn-log");
-        $newConsole->content = $this->getDNLogger();
 
-        Logger::warn('apply style');
+        if ($this->container == null) {
+            $this->getDNLogger();
+        } else {
+            $this->container->free();
+        }
+
+        $newConsole->content = $this->container;
+
 
         Ide::get()->getMainForm()->addStylesheet((new ResourceStream('.data/style/filteredTextField.fx.css'))->toExternalForm());
     }
@@ -144,6 +155,7 @@ class DNLog
         $controlsContainer->add($this->level = new UXCombobox());
         $controlsContainer->add(new UXLabelEx("Filter:"));
         $controlsContainer->add($this->filter = new FilteredTextField());
+        $controlsContainer->add($this->clearButton = new UXButton());
         $this->container->add($listContainer = new UXScrollPane(new UXVBox()));
 
         $controlsContainer->alignment = "CENTER";
@@ -171,11 +183,48 @@ class DNLog
             LineFilter::filter(flow($this->filter->selectedFilters)->append([$new])->toArray(), $level, $this->logUIData);
         });
 
+        $this->clearButton->css("-fx-shape", '"M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM2 10C2 5.58 5.58 2 10 2C11.85 2 13.55 2.63 14.9 3.69L3.69 14.9C2.63 13.55 2 11.85 2 10ZM10 18C8.15 18 6.45 17.37 5.1 16.31L16.31 5.1C17.37 6.45 18 8.15 18 10C18 14.42 14.42 18 10 18Z"');
+        $clearButtonSize = 20;
+        $this->clearButton->css("-fx-min-width", $clearButtonSize);
+        $this->clearButton->css("-fx-min-height", $clearButtonSize);
+        $this->clearButton->css("-fx-max-width", $clearButtonSize);
+        $this->clearButton->css("-fx-max-height", $clearButtonSize);
+        $this->clearButton->classes->add("clear-button-log");
+        $this->clearButton->on('click', function ($ev) use ($listContainer) {
+            if ($ev->button != 'PRIMARY') return;
+
+            $this->logUIData = [];
+            $listContainer->content->children->clear();
+        });
+
         $listContainer->fitToWidth = true;
+        $listContainer->content->observer("height")->addListener(function ($o, $new) use ($listContainer) {
+            if ($this->autoScroll) {
+                $listContainer->scrollY = 1;
+            }
+
+            $this->heightDifference = $new - $o;
+
+            if ($o !== 0 && $this->defaultHeightRatio == null) {
+                $this->defaultHeightRatio = $this->heightDifference / $this->container->height;
+            }
+        });
+
+        $listContainer->observer("vvalue")->addListener(function ($o, $new) {
+            if ($o == 1) {
+                if (($this->heightDifference / $this->container->height) == $this->defaultHeightRatio) {
+                    $this->autoScroll = true;
+                    return;
+                } else {
+                    $this->defaultHeightRatio = $this->heightDifference / $this->container->height;
+                }
+            }
+
+            $this->autoScroll = ($new == 1);
+        });
 
         UXVBox::setVgrow($controlsContainer, 'ALWAYS');
         UXVBox::setVgrow($listContainer, 'ALWAYS');
-        // UXHBox::setHgrow($listContainer->content, 'ALWAYS');
         UXHBox::setHgrow($this->filter, 'ALWAYS');
 
         return $this->container;
@@ -197,13 +246,15 @@ class DNLog
             $line->setMessage(base64_decode($data[LogDataLine::D_MESSAGE]));
             $line->on("class.click", function ($e) {
                 $this->filter->getTextField()->text = "class:" . $e->sender->text;
+                $this->filter->getTextField()->requestFocus();
+                $this->filter->getTextField()->positionCaret($this->filter->getTextField()->length);
             });
         } else {
             $line = $this->paresLine($data);
         }
 
         if (Ide::get()->getMainForm()->layout->data("list-container")) {
-            Logger::error(var_export($data, true));
+            // Logger::error(var_export($data, true));
             Ide::get()->getMainForm()->layout->data("list-container")->content->add($line->getNode());
 
             if (count($this->filter->selectedFilters) > 0) {

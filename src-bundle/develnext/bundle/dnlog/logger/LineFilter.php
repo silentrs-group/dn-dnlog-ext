@@ -8,11 +8,16 @@ use framework;
 use ide\Ide;
 use ide\Logger;
 use std;
+use gui;
 
 class LineFilter
 {
     private static $filters = [];
     private static $anyText;
+    /**
+     * @var int
+     */
+    public static $classDataSize;
 
     public static function register(AbstractFilter $filter)
     {
@@ -41,8 +46,17 @@ class LineFilter
 
         if (Ide::get()->getMainForm()->layout->data("list-container")) {
             Ide::get()->getMainForm()->layout->data("list-container")->content->children->clear();
+            self::$classDataSize = 0;
 
             $data = flow($data)->find(function (LogDataLine $item) use ($level) {
+/*
+                // if (self::$classDataSize < ($l = UXFont::getDefault()->calculateTextWidth($item->data("raw")[LogDataLine::D_CLASS]))) {
+                if (self::$classDataSize < ($l = $item->getNode()
+                        ->children[LogDataLine::D_CLASS]->font
+                        ->calculateTextWidth($item->data("raw")[LogDataLine::D_CLASS]))) {
+                    self::$classDataSize = $l;
+                }*/
+
                 return $level == 'All' || $item->data("raw")[LogDataLine::D_LOG_LEVEL] == $level;
             })->toArray();
 
@@ -60,11 +74,11 @@ class LineFilter
                     }
 
                     return self::$anyText->has($item, $level, $searchString);
-
                 })->toArray();
             }
 
             flow($data)->each(function (LogDataLine $item) {
+                // $item->getNode()->children[LogDataLine::D_CLASS-1]->css("-fx-min-width", self::$classDataSize);
                 Ide::get()->getMainForm()->layout->data("list-container")->content->children->add($item->getNode());
             });
         }

@@ -38,7 +38,7 @@ class DNLogServer
                         $line .= $chr;
                     }
 
-                    Logger::error($line);
+                    // Logger::error($line);
                     // Logger::error("len:".$length);
 
                     uiLater(function () use ($messageCallback, $line) {

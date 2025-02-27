@@ -19,7 +19,7 @@ class DNLogBundle extends AbstractJarBundle
     {
         parent::onRegister($resource);
 
-        Logger::info($resource->getPath());
+        // Logger::info($resource->getPath());
 
 
         if (!class_exists(DNLogServer::class)) {
